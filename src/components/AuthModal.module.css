@@ -87,4 +87,51 @@
   margin-top: 10px;
   text-align: center;
   font-size: 0.9rem;
+
+}
+
+/* ... CSS lainnya biarkan ... */
+
+.coordSection {
+  background: #f8fafc;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.coordInputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.coordInputs input {
+  background: #fff;
+  cursor: default;
+}
+
+.locBtn {
+  width: 100%;
+  padding: 10px;
+  background: #3b82f6; /* Warna Biru Terang */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.locBtn:hover {
+  background: #2563eb;
+}
+
+.locBtn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
 }

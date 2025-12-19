@@ -94,7 +94,7 @@ function App() {
   return (
     <div className={styles.container}>
       {/* Header Login/User */}
-      <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 10000 }}>
+      <div style={{ position: 'absolute', top: 20, right: 200, zIndex: 10000 }}>
         {user ? (
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <span style={{ fontWeight: 'bold', background: 'rgba(255,255,255,0.9)', padding: '5px 12px', borderRadius: '20px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
@@ -122,12 +122,12 @@ function App() {
 
           <div className={styles.content}>
             <h1 className={styles.title}>Explore Indonesia<br />Like Never Before</h1>
-            <p className={styles.subtitle}>Discover the <strong>best</strong> food, entertainment, and stays</p>
+            <p className={styles.subtitle}>Discover the <strong>best</strong> food, entertainment, and stays.</p>
 
             {/* Tombol Tambah Rekomendasi (Hanya User Biasa) */}
             <button 
               onClick={handleOpenRecommend}
-              style={{ width: '85%', padding: '12px', marginBottom: '20px', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem' }}
+              style={{ width: '87%', padding: '12px', marginBottom: '20px', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem' }}
             >
               + Tambah Rekomendasi
             </button>

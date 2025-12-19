@@ -1,0 +1,25 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20000;
+}
+
+.modal {
+  background: white;
+  padding: 20px 22px;
+  border-radius: 12px;
+  width: 420px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.form label { display: block; margin-bottom: 12px; font-size: 14px; }
+.form input, .form textarea { width: 100%; padding: 8px 10px; margin-top: 6px; border-radius: 6px; border: 1px solid #ddd; }
+.row { display: flex; gap: 10px; }
+.row label { flex: 1; }
+.actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px; }
+.primary { background: #10b981; color: white; padding: 8px 14px; border: none; border-radius: 8px; cursor: pointer; }
+.ghost { background: transparent; border: 1px solid #ddd; padding: 8px 12px; border-radius: 8px; cursor: pointer; }

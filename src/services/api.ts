@@ -1,12 +1,8 @@
 // src/services/api.ts
-
-// Logika ini akan otomatis memilih URL:
-// - Kalau di localhost -> pakai http://localhost:5000/api
-// - Kalau di Vercel -> pakai URL yang kita setting di Environment Variable
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export const api = {
-  // === AUTHENTICATION ===
+  // Auth
   async login(email: string, password: string) {
     const response = await fetch(`${API_BASE_URL}/users/login`, {
       method: 'POST',
@@ -25,7 +21,7 @@ export const api = {
     return response.json();
   },
 
-  // === ATTRACTIONS PUBLIC ===
+  // Public Data
   async getAttractions() {
     const response = await fetch(`${API_BASE_URL}/attractions/medan`);
     return response.json();
@@ -37,9 +33,7 @@ export const api = {
   },
 
   async getNearbyAttractions(lat: number, lng: number, radius = 5) {
-    const response = await fetch(
-      `${API_BASE_URL}/attractions/nearby?lat=${lat}&lng=${lng}&radius=${radius}`
-    );
+    const response = await fetch(`${API_BASE_URL}/attractions/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
     return response.json();
   },
 
@@ -48,7 +42,7 @@ export const api = {
     return response.json();
   },
 
-  // === USER & ADMIN ACTIONS ===
+  // User Action
   async submitRecommendation(data: any, token: string) {
     const response = await fetch(`${API_BASE_URL}/attractions/recommend`, {
       method: 'POST',
@@ -61,7 +55,7 @@ export const api = {
     return response.json();
   },
 
-  // ADMIN: Get Pending List
+  // Admin Actions
   async getPendingRecommendations(token: string) {
     const response = await fetch(`${API_BASE_URL}/attractions/recommendations/pending`, {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -69,7 +63,6 @@ export const api = {
     return response.json();
   },
 
-  // ADMIN: Approve
   async approveRecommendation(id: string, categoryId: number, token: string) {
     const response = await fetch(`${API_BASE_URL}/attractions/recommendations/${id}/approve`, {
       method: 'POST',
@@ -82,13 +75,20 @@ export const api = {
     return response.json();
   },
 
-  // ADMIN: Reject
   async rejectRecommendation(id: string, token: string) {
     const response = await fetch(`${API_BASE_URL}/attractions/recommendations/${id}/reject`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return response.json();
+  },
+
+  // BARU: Delete Attraction
+  async deleteAttraction(id: string, token: string) {
+    const response = await fetch(`${API_BASE_URL}/attractions/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return response.json();
   }
 };
-

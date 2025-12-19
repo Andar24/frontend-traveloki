@@ -17,6 +17,7 @@ function App() {
   });
   const [attractions, setAttractions] = useState<Attractions>({ food: [], fun: [], hotels: [] });
   const [searchResult, setSearchResult] = useState<Attraction | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Auth State
@@ -126,20 +127,31 @@ function App() {
             {/* Tombol Tambah Rekomendasi (Hanya User Biasa) */}
             <button 
               onClick={handleOpenRecommend}
-              style={{ width: '100%', padding: '12px', marginBottom: '20px', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem' }}
+              style={{ width: '85%', padding: '12px', marginBottom: '20px', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem' }}
             >
               + Tambah Rekomendasi
             </button>
 
             <CategoryFilter activeCategories={activeCategories} onToggle={(c) => setActiveCategories(p => ({...p, [c]: !p[c]}))} />
-            <SearchBar attractions={attractions} activeCategories={activeCategories} onSearch={setSearchResult} onCategoryActivate={(c) => setActiveCategories(p => ({...p, [c]: !p[c]}))} />
+            <SearchBar
+              attractions={attractions}
+              activeCategories={activeCategories}
+              userLocation={userLocation}
+              onSearch={setSearchResult}
+              onCategoryActivate={(c) => setActiveCategories(p => ({...p, [c]: !p[c]}))}
+            />
           </div>
         </div>
       </div>
 
       <div className={styles.right}>
         <section className={styles.mapBox}>
-          <Map attractions={attractions} activeCategories={activeCategories} searchResult={searchResult} />
+          <Map
+            attractions={attractions}
+            activeCategories={activeCategories}
+            searchResult={searchResult}
+            onLocationUpdate={(pos) => setUserLocation(pos)}
+          />
         </section>
       </div>
 

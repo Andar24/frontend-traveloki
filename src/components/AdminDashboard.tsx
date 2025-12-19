@@ -1,21 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import styles from './AdminDashboard.module.css';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-// Fix icon marker leaflet yang kadang hilang di react
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-
-const DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
-});
-L.Marker.prototype.options.icon = DefaultIcon;
 
 interface AttractionItem {
   id: string;
@@ -26,39 +11,12 @@ interface AttractionItem {
   address: string;
 }
 
-// Komponen Peta Kecil untuk Memilih Lokasi
-const LocationPicker = ({ onLocationSelect, initialPos }: { onLocationSelect: (lat: number, lng: number) => void, initialPos: {lat: number, lng: number} | null }) => {
-  const [position, setPosition] = useState(initialPos);
-
-  const MapEvents = () => {
-    useMapEvents({
-      click(e) {
-        setPosition(e.latlng);
-        onLocationSelect(e.latlng.lat, e.latlng.lng);
-      },
-    });
-    return null;
-  };
-
-  return (
-    <MapContainer 
-      center={[3.5952, 98.6722]} // Default Medan
-      zoom={13} 
-      style={{ height: '100%', width: '100%', borderRadius: '12px' }}
-    >
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-      <MapEvents />
-      {position && <Marker position={position} />}
-    </MapContainer>
-  );
-};
-
 export const AdminDashboard = ({ token, onLogout }: { token: string, onLogout: () => void }) => {
   const [activeTab, setActiveTab] = useState<'pending' | 'active'>('pending');
   const [items, setItems] = useState<AttractionItem[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  // Form State
+
+  // State Form Tambah
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState({
     name: '', description: '', category: 'food',
@@ -88,26 +46,30 @@ export const AdminDashboard = ({ token, onLogout }: { token: string, onLogout: (
 
   useEffect(() => { fetchData(); }, [activeTab]);
 
-  const handleDelete = async (id: string, name: string) => {
-    if (confirm(`HAPUS PERMANEN "${name}"?`)) {
-      await api.deleteAttraction(id, token);
-      fetchData();
-    }
-  };
-
+  // Actions
   const handleApprove = async (id: string, categoryStr: string) => {
     const map: Record<string, number> = { 'food': 1, 'fun': 2, 'hotels': 3 };
     const catId = map[categoryStr.toLowerCase()] || 1;
-    if (confirm(`Setujui tempat ini?`)) {
+    if (confirm(`Setujui tempat "${categoryStr}" ini?`)) {
       await api.approveRecommendation(id, catId, token);
       fetchData(); 
     }
   };
 
   const handleReject = async (id: string) => {
-    if (confirm('Tolak rekomendasi?')) {
+    if (confirm('Tolak rekomendasi ini?')) {
       await api.rejectRecommendation(id, token);
       fetchData(); 
+    }
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    if (confirm(`Yakin ingin MENGHAPUS PERMANEN "${name}"?`)) {
+      try {
+        const res = await api.deleteAttraction(id, token);
+        alert(res.message);
+        fetchData();
+      } catch (err: any) { alert("Gagal menghapus: " + err.message); }
     }
   };
 
@@ -121,7 +83,7 @@ export const AdminDashboard = ({ token, onLogout }: { token: string, onLogout: (
       };
       const res = await api.createAttraction(payload, token);
       if (res.status === 'success') {
-        alert('✅ Tempat berhasil ditambahkan!');
+        alert('Berhasil menambahkan tempat baru!');
         setShowAddForm(false);
         setFormData({ name: '', description: '', category: 'food', lat: '', lng: '', address: '' });
         setActiveTab('active'); 
@@ -134,142 +96,100 @@ export const AdminDashboard = ({ token, onLogout }: { token: string, onLogout: (
 
   return (
     <div className={styles.container}>
-      {/* Header */}
+      {/* HEADER */}
       <div className={styles.header}>
         <div className={styles.brand}>
-          <h1>🛡️ Admin Control Center</h1>
+          <h1>🛡️ Admin Panel</h1>
+          <span className={styles.badge}>Super User</span>
         </div>
-        <button onClick={onLogout} className={styles.logoutBtn}>Logout</button>
+        <button onClick={onLogout} className={styles.logoutBtn}>Logout / Keluar</button>
       </div>
 
       <div className={styles.main}>
-        {/* Tabs */}
+        {/* TABS */}
         <div className={styles.tabs}>
           <button 
             className={`${styles.tabBtn} ${activeTab === 'pending' ? styles.active : ''}`}
             onClick={() => setActiveTab('pending')}
           >
-            ⏳ Menunggu Approval
+            ⏳ Menunggu Verifikasi
           </button>
           <button 
             className={`${styles.tabBtn} ${activeTab === 'active' ? styles.active : ''}`}
             onClick={() => setActiveTab('active')}
           >
-            ✅ Data Aktif
+            ✅ Data Aktif (Kelola)
           </button>
         </div>
 
-        {/* Tombol Tambah (Hanya di Active) */}
+        {/* TOMBOL TAMBAH (Hanya di Tab Active) */}
         {activeTab === 'active' && (
           <button className={styles.addBtn} onClick={() => setShowAddForm(true)}>
             + Tambah Tempat Baru
           </button>
         )}
 
-        {/* --- MODAL TAMBAH KEREN --- */}
+        {/* MODAL FORM TAMBAH */}
         {showAddForm && (
           <div className={styles.modalOverlay}>
-            <div className={styles.modalContent}>
-              <div className={styles.modalHeader}>
-                <h2>📍 Tambah Destinasi Baru</h2>
-                <button onClick={() => setShowAddForm(false)} className={styles.closeIcon}>&times;</button>
-              </div>
-              
-              <div className={styles.modalBody}>
-                {/* KOLOM KIRI: FORM */}
-                <form onSubmit={handleCreate} className={styles.formLeft}>
-                  <div className={styles.formGroup}>
-                    <label>Nama Tempat</label>
-                    <input 
-                      required 
-                      placeholder="Contoh: Merdeka Walk" 
-                      value={formData.name} 
-                      onChange={e=>setFormData({...formData, name:e.target.value})} 
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label>Kategori</label>
-                    <select value={formData.category} onChange={e=>setFormData({...formData, category:e.target.value})}>
-                      <option value="food">🍽️ Kuliner (Food)</option>
-                      <option value="fun">🎡 Hiburan (Fun)</option>
-                      <option value="hotels">🏨 Penginapan (Hotels)</option>
-                    </select>
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label>Alamat Lengkap</label>
-                    <input 
-                      required 
-                      placeholder="Jalan..." 
-                      value={formData.address} 
-                      onChange={e=>setFormData({...formData, address:e.target.value})} 
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label>Deskripsi</label>
-                    <textarea 
-                      required 
-                      placeholder="Jelaskan tempat ini..." 
-                      value={formData.description} 
-                      onChange={e=>setFormData({...formData, description:e.target.value})} 
-                    />
-                  </div>
-
-                  <div className={styles.coordGroup}>
-                    <div>
-                      <label>Lat</label>
-                      <input value={formData.lat} readOnly placeholder="Klik Peta ->" />
-                    </div>
-                    <div>
-                      <label>Lng</label>
-                      <input value={formData.lng} readOnly placeholder="Klik Peta ->" />
-                    </div>
-                  </div>
-
-                  <button type="submit" className={styles.saveBtn}>Simpan Data</button>
-                </form>
-
-                {/* KOLOM KANAN: PETA PICKER */}
-                <div className={styles.mapRight}>
-                  <p className={styles.mapHint}>👇 Klik di peta untuk mengisi Lat/Lng otomatis</p>
-                  <LocationPicker 
-                    initialPos={null}
-                    onLocationSelect={(lat, lng) => setFormData({...formData, lat: lat.toString(), lng: lng.toString()})}
-                  />
+            <div className={styles.modal}>
+              <h2>Tambah Tempat Wisata</h2>
+              <form onSubmit={handleCreate} className={styles.form}>
+                <input required placeholder="Nama Tempat" value={formData.name} onChange={e=>setFormData({...formData, name:e.target.value})} />
+                <select value={formData.category} onChange={e=>setFormData({...formData, category:e.target.value})}>
+                  <option value="food">Kuliner (Food)</option>
+                  <option value="fun">Hiburan (Fun)</option>
+                  <option value="hotels">Penginapan (Hotels)</option>
+                </select>
+                <div style={{display:'flex', gap:'10px'}}>
+                  <input required placeholder="Latitude (ex: 3.595)" value={formData.lat} onChange={e=>setFormData({...formData, lat:e.target.value})} />
+                  <input required placeholder="Longitude (ex: 98.672)" value={formData.lng} onChange={e=>setFormData({...formData, lng:e.target.value})} />
                 </div>
-              </div>
+                <input required placeholder="Alamat Lengkap" value={formData.address} onChange={e=>setFormData({...formData, address:e.target.value})} />
+                <textarea required placeholder="Deskripsi Singkat" value={formData.description} onChange={e=>setFormData({...formData, description:e.target.value})} />
+                
+                <div className={styles.formActions}>
+                  <button type="button" onClick={() => setShowAddForm(false)} className={styles.cancelBtn}>Batal</button>
+                  <button type="submit" className={styles.saveBtn}>Simpan</button>
+                </div>
+              </form>
             </div>
           </div>
         )}
 
-        {/* CONTENT LIST */}
+        {/* LIST DATA */}
         <div className={styles.content}>
-          {loading ? <p>Loading...</p> : (
-            <div className={styles.grid}>
-              {items.map(item => (
-                <div key={item.id} className={styles.card}>
-                  <div className={styles.cardHeader}>
-                    <span className={`${styles.catTag} ${styles[item.category]}`}>{item.category}</span>
-                    {activeTab === 'pending' && <span className={styles.pendingTag}>New</span>}
+          {loading ? <p>Loading data...</p> : (
+            items.length === 0 ? <p className={styles.empty}>Tidak ada data.</p> : (
+              <div className={styles.grid}>
+                {items.map(item => (
+                  <div key={item.id} className={styles.card}>
+                    <div className={styles.cardHeader}>
+                      <span className={`${styles.catTag} ${styles[item.category]}`}>{item.category}</span>
+                      {activeTab === 'pending' && <span className={styles.pendingTag}>New</span>}
+                    </div>
+                    
+                    <h3>{item.name}</h3>
+                    <p className={styles.desc}>{item.description}</p>
+                    <div className={styles.meta}>
+                      <small>📍 {item.address}</small>
+                      {item.submitted_by_username && <small>👤 {item.submitted_by_username}</small>}
+                    </div>
+                    
+                    <div className={styles.actions}>
+                      {activeTab === 'pending' ? (
+                        <>
+                          <button onClick={() => handleApprove(item.id, item.category)} className={styles.approveBtn}>Setujui</button>
+                          <button onClick={() => handleReject(item.id)} className={styles.rejectBtn}>Tolak</button>
+                        </>
+                      ) : (
+                        <button onClick={() => handleDelete(item.id, item.name)} className={styles.deleteBtn}>Hapus Permanen</button>
+                      )}
+                    </div>
                   </div>
-                  <h3>{item.name}</h3>
-                  <p className={styles.desc}>{item.description}</p>
-                  <small className={styles.meta}>📍 {item.address}</small>
-                  <div className={styles.actions}>
-                    {activeTab === 'pending' ? (
-                      <>
-                        <button onClick={() => handleApprove(item.id, item.category)} className={styles.approveBtn}>Approve</button>
-                        <button onClick={() => handleReject(item.id)} className={styles.rejectBtn}>Reject</button>
-                      </>
-                    ) : (
-                      <button onClick={() => handleDelete(item.id, item.name)} className={styles.deleteBtn}>Hapus</button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )
           )}
         </div>
       </div>

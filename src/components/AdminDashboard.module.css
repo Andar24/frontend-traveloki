@@ -1,22 +1,23 @@
+/* src/components/AdminDashboard.module.css */
 .overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.8);
+  background: rgba(0,0,0,0.85);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 2000;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(5px);
 }
 .dashboard {
   background: white;
   width: 90%;
-  max-width: 600px;
-  height: 80vh;
+  max-width: 700px;
+  height: 85vh;
   border-radius: 16px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
   overflow: hidden;
 }
 .header { 
@@ -28,26 +29,60 @@
   border-bottom: 1px solid #eee;
 }
 .closeBtn { background: #cbd5e1; border: none; padding: 6px 12px; cursor: pointer; border-radius: 6px; font-weight: bold; }
-.content { flex: 1; overflow-y: auto; padding: 20px; }
+
+/* TABS STYLE */
+.tabs {
+  display: flex;
+  background: #f1f5f9;
+  padding: 0 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.tabBtn {
+  background: transparent;
+  border: none;
+  padding: 15px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+}
+.tabBtn:hover { color: #334155; background: #e2e8f0; }
+.tabBtn.active { color: #2563eb; border-bottom: 3px solid #2563eb; background: white; }
+
+.content { flex: 1; overflow-y: auto; padding: 20px; background: #f8fafc; }
 .card {
   border: 1px solid #e2e8f0;
   padding: 15px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   border-radius: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: #fff;
-  transition: transform 0.2s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
-.card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 .cardInfo { flex: 1; padding-right: 15px; }
-.tag { background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px; vertical-align: middle; text-transform: uppercase; font-weight: bold; }
+.tag { background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px; text-transform: uppercase; font-weight: bold; }
+
 .actions { display: flex; gap: 8px; }
 .approveBtn, .rejectBtn {
-  border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+  border: none; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
 }
 .approveBtn { background: #dcfce7; color: #166534; }
-.approveBtn:hover { background: #22c55e; color: white; }
 .rejectBtn { background: #fee2e2; color: #991b1b; }
-.rejectBtn:hover { background: #ef4444; color: white; }
+
+.deleteBtn {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.deleteBtn:hover { background: #dc2626; color: white; }

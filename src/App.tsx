@@ -1,4 +1,3 @@
-ini App.tsx:
 import React, { useState, useEffect } from 'react';
 import type { Category, Attraction, Attractions, User } from './types';
 import { Map } from './components/Map';

@@ -1,4 +1,3 @@
-// src/App.tsx
 import { useState, useEffect } from 'react';
 import type { Category, Attraction, Attractions, User } from './types';
 import { Map } from './components/Map';
@@ -22,7 +21,6 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showAdmin, setShowAdmin] = useState(false);
 
   useEffect(() => {
     const savedToken = localStorage.getItem('traveloki_token');
@@ -33,13 +31,6 @@ function App() {
     }
     fetchAttractions();
   }, []);
-
-  // AUTO-OPEN DASHBOARD untuk ADMIN
-  useEffect(() => {
-    if (user?.role === 'admin') {
-      setShowAdmin(true);
-    }
-  }, [user]);
 
   const fetchAttractions = async () => {
     try {
@@ -60,7 +51,7 @@ function App() {
     setUser(null); setToken(null);
     localStorage.removeItem('traveloki_token');
     localStorage.removeItem('traveloki_user');
-    setShowAdmin(false);
+    // window.location.reload(); // Opsional: refresh biar bersih
     alert("Berhasil logout");
   };
 
@@ -86,6 +77,17 @@ function App() {
 
   if (loading) return <div className={styles.container}>Loading Traveloki...</div>;
 
+  // === LOGIKA BARU: JIKA ADMIN, TAMPILKAN DASHBOARD SAJA ===
+  if (user?.role === 'admin' && token) {
+    return (
+      <AdminDashboard 
+        token={token} 
+        onLogout={handleLogout} // Kita oper fungsi logout ke dashboard
+      />
+    );
+  }
+
+  // === TAMPILAN USER BIASA (PETA) ===
   return (
     <div className={styles.container}>
       {/* Header User/Login */}
@@ -93,7 +95,7 @@ function App() {
         {user ? (
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <span style={{ fontWeight: 'bold', background: 'rgba(255,255,255,0.9)', padding: '5px 12px', borderRadius: '20px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
-              {user.role === 'admin' ? '👮‍♂️ Admin' : '👤'} {user.username}
+              👤 {user.username}
             </span>
             <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold' }}>
               Logout
@@ -119,25 +121,12 @@ function App() {
             <h1 className={styles.title}>Explore Indonesia<br />Like Never Before</h1>
             <p className={styles.subtitle}>Discover the <strong>best</strong> food, entertainment, and stays</p>
 
-            {/* Admin Button: Buka Dashboard Manual */}
-            {user?.role === 'admin' && (
-              <button 
-                onClick={() => setShowAdmin(true)}
-                style={{ width: '100%', padding: '12px', marginBottom: '20px', background: '#1e293b', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', justifyContent: 'center', gap: '8px' }}
-              >
-                🛡️ Buka Admin Panel
-              </button>
-            )}
-
-            {/* Tombol Tambah: HANYA UNTUK USER BIASA */}
-            {user?.role !== 'admin' && (
-              <button 
-                onClick={handleTestSubmit}
-                style={{ width: '100%', padding: '12px', marginBottom: '20px', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem' }}
-              >
-                + Tambah Rekomendasi
-              </button>
-            )}
+            <button 
+              onClick={handleTestSubmit}
+              style={{ width: '100%', padding: '12px', marginBottom: '20px', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem' }}
+            >
+              + Tambah Rekomendasi
+            </button>
 
             <CategoryFilter activeCategories={activeCategories} onToggle={(c) => setActiveCategories(p => ({...p, [c]: !p[c]}))} />
             <SearchBar attractions={attractions} activeCategories={activeCategories} onSearch={setSearchResult} onCategoryActivate={(c) => setActiveCategories(p => ({...p, [c]: !p[c]}))} />
@@ -152,7 +141,6 @@ function App() {
       </div>
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onLoginSuccess={handleLoginSuccess} />}
-      {showAdmin && token && <AdminDashboard token={token} onClose={() => setShowAdmin(false)} />}
     </div>
   );
 }

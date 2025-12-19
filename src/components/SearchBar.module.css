@@ -1,0 +1,27 @@
+.searchbar {
+  width: 86.5%;
+  background: rgba(212, 255, 157, 0.15);
+  padding: 16px 20px;
+  border-radius: 12px;
+  font-size: 16px;
+  color: white;
+  border: 2px solid rgba(212, 255, 157, 0.4);
+  backdrop-filter: blur(12px);
+  transition: all 0.35s ease;
+  margin-top: 25px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+.searchbar::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.searchbar:hover,
+.searchbar:focus {
+  background: rgba(212, 255, 157, 0.25);
+  border-color: #d4ff9d;
+  box-shadow: 0 6px 20px rgba(212, 255, 157, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+  outline: none;
+  color: white;
+}

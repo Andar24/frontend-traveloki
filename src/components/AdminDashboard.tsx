@@ -11,11 +11,17 @@ interface AttractionItem {
   address: string;
 }
 
-// Props berubah: sekarang menerima onLogout
 export const AdminDashboard = ({ token, onLogout }: { token: string, onLogout: () => void }) => {
   const [activeTab, setActiveTab] = useState<'pending' | 'active'>('pending');
   const [items, setItems] = useState<AttractionItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // State Form Tambah
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '', description: '', category: 'food',
+    lat: '', lng: '', address: ''
+  });
 
   const fetchData = async () => {
     setLoading(true);
@@ -40,6 +46,7 @@ export const AdminDashboard = ({ token, onLogout }: { token: string, onLogout: (
 
   useEffect(() => { fetchData(); }, [activeTab]);
 
+  // Actions
   const handleApprove = async (id: string, categoryStr: string) => {
     const map: Record<string, number> = { 'food': 1, 'fun': 2, 'hotels': 3 };
     const catId = map[categoryStr.toLowerCase()] || 1;
@@ -57,8 +64,7 @@ export const AdminDashboard = ({ token, onLogout }: { token: string, onLogout: (
   };
 
   const handleDelete = async (id: string, name: string) => {
-    const text = prompt(`Ketik "HAPUS" untuk menghapus "${name}" selamanya:`);
-    if (text === "HAPUS") {
+    if (confirm(`Yakin ingin MENGHAPUS PERMANEN "${name}"?`)) {
       try {
         const res = await api.deleteAttraction(id, token);
         alert(res.message);
@@ -67,18 +73,36 @@ export const AdminDashboard = ({ token, onLogout }: { token: string, onLogout: (
     }
   };
 
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        ...formData,
+        lat: parseFloat(formData.lat),
+        lng: parseFloat(formData.lng)
+      };
+      const res = await api.createAttraction(payload, token);
+      if (res.status === 'success') {
+        alert('Berhasil menambahkan tempat baru!');
+        setShowAddForm(false);
+        setFormData({ name: '', description: '', category: 'food', lat: '', lng: '', address: '' });
+        setActiveTab('active'); 
+        fetchData();
+      } else {
+        alert('Gagal: ' + res.message);
+      }
+    } catch (err: any) { alert('Error: ' + err.message); }
+  };
+
   return (
     <div className={styles.container}>
-      {/* SIDEBAR / HEADER */}
+      {/* HEADER */}
       <div className={styles.header}>
         <div className={styles.brand}>
           <h1>🛡️ Admin Panel</h1>
           <span className={styles.badge}>Super User</span>
         </div>
-        
-        <button onClick={onLogout} className={styles.logoutBtn}>
-          Keluar / Logout
-        </button>
+        <button onClick={onLogout} className={styles.logoutBtn}>Logout / Keluar</button>
       </div>
 
       <div className={styles.main}>
@@ -88,7 +112,7 @@ export const AdminDashboard = ({ token, onLogout }: { token: string, onLogout: (
             className={`${styles.tabBtn} ${activeTab === 'pending' ? styles.active : ''}`}
             onClick={() => setActiveTab('pending')}
           >
-            ⏳ Menunggu Verifikasi ({items.length})
+            ⏳ Menunggu Verifikasi
           </button>
           <button 
             className={`${styles.tabBtn} ${activeTab === 'active' ? styles.active : ''}`}
@@ -98,10 +122,45 @@ export const AdminDashboard = ({ token, onLogout }: { token: string, onLogout: (
           </button>
         </div>
 
-        {/* CONTENT */}
+        {/* TOMBOL TAMBAH (Hanya di Tab Active) */}
+        {activeTab === 'active' && (
+          <button className={styles.addBtn} onClick={() => setShowAddForm(true)}>
+            + Tambah Tempat Baru
+          </button>
+        )}
+
+        {/* MODAL FORM TAMBAH */}
+        {showAddForm && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modal}>
+              <h2>Tambah Tempat Wisata</h2>
+              <form onSubmit={handleCreate} className={styles.form}>
+                <input required placeholder="Nama Tempat" value={formData.name} onChange={e=>setFormData({...formData, name:e.target.value})} />
+                <select value={formData.category} onChange={e=>setFormData({...formData, category:e.target.value})}>
+                  <option value="food">Kuliner (Food)</option>
+                  <option value="fun">Hiburan (Fun)</option>
+                  <option value="hotels">Penginapan (Hotels)</option>
+                </select>
+                <div style={{display:'flex', gap:'10px'}}>
+                  <input required placeholder="Latitude (ex: 3.595)" value={formData.lat} onChange={e=>setFormData({...formData, lat:e.target.value})} />
+                  <input required placeholder="Longitude (ex: 98.672)" value={formData.lng} onChange={e=>setFormData({...formData, lng:e.target.value})} />
+                </div>
+                <input required placeholder="Alamat Lengkap" value={formData.address} onChange={e=>setFormData({...formData, address:e.target.value})} />
+                <textarea required placeholder="Deskripsi Singkat" value={formData.description} onChange={e=>setFormData({...formData, description:e.target.value})} />
+                
+                <div className={styles.formActions}>
+                  <button type="button" onClick={() => setShowAddForm(false)} className={styles.cancelBtn}>Batal</button>
+                  <button type="submit" className={styles.saveBtn}>Simpan</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* LIST DATA */}
         <div className={styles.content}>
           {loading ? <p>Loading data...</p> : (
-            items.length === 0 ? <p className={styles.empty}>Tidak ada data saat ini.</p> : (
+            items.length === 0 ? <p className={styles.empty}>Tidak ada data.</p> : (
               <div className={styles.grid}>
                 {items.map(item => (
                   <div key={item.id} className={styles.card}>

@@ -51,8 +51,8 @@ function App() {
     setUser(null); setToken(null);
     localStorage.removeItem('traveloki_token');
     localStorage.removeItem('traveloki_user');
-    // window.location.reload(); // Opsional: refresh biar bersih
     alert("Berhasil logout");
+    // Opsional: window.location.reload() jika ingin refresh halaman bersih
   };
 
   const handleTestSubmit = async () => {
@@ -77,12 +77,13 @@ function App() {
 
   if (loading) return <div className={styles.container}>Loading Traveloki...</div>;
 
-  // === LOGIKA BARU: JIKA ADMIN, TAMPILKAN DASHBOARD SAJA ===
+  // === LOGIKA KHUSUS ADMIN ===
+  // Jika Admin Login -> Tampilkan Dashboard Full Screen (SKIP Peta)
   if (user?.role === 'admin' && token) {
     return (
       <AdminDashboard 
         token={token} 
-        onLogout={handleLogout} // Kita oper fungsi logout ke dashboard
+        onLogout={handleLogout} 
       />
     );
   }
@@ -90,7 +91,7 @@ function App() {
   // === TAMPILAN USER BIASA (PETA) ===
   return (
     <div className={styles.container}>
-      {/* Header User/Login */}
+      {/* Header Login/User */}
       <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 100 }}>
         {user ? (
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -121,6 +122,7 @@ function App() {
             <h1 className={styles.title}>Explore Indonesia<br />Like Never Before</h1>
             <p className={styles.subtitle}>Discover the <strong>best</strong> food, entertainment, and stays</p>
 
+            {/* Tombol Tambah Rekomendasi (Hanya User Biasa) */}
             <button 
               onClick={handleTestSubmit}
               style={{ width: '100%', padding: '12px', marginBottom: '20px', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem' }}

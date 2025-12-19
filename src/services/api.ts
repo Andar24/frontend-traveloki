@@ -1,8 +1,7 @@
-// src/services/api.ts
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export const api = {
-  // Auth
+  // === AUTH ===
   async login(email: string, password: string) {
     const response = await fetch(`${API_BASE_URL}/users/login`, {
       method: 'POST',
@@ -21,7 +20,7 @@ export const api = {
     return response.json();
   },
 
-  // Public Data
+  // === PUBLIC GET ===
   async getAttractions() {
     const response = await fetch(`${API_BASE_URL}/attractions/medan`);
     return response.json();
@@ -42,7 +41,7 @@ export const api = {
     return response.json();
   },
 
-  // User Action
+  // === USER ===
   async submitRecommendation(data: any, token: string) {
     const response = await fetch(`${API_BASE_URL}/attractions/recommend`, {
       method: 'POST',
@@ -55,7 +54,7 @@ export const api = {
     return response.json();
   },
 
-  // Admin Actions
+  // === ADMIN FEATURES ===
   async getPendingRecommendations(token: string) {
     const response = await fetch(`${API_BASE_URL}/attractions/recommendations/pending`, {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -83,7 +82,18 @@ export const api = {
     return response.json();
   },
 
-  // BARU: Delete Attraction
+  async createAttraction(data: any, token: string) {
+    const response = await fetch(`${API_BASE_URL}/attractions`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` 
+      },
+      body: JSON.stringify(data),
+    });
+    return response.json();
+  },
+
   async deleteAttraction(id: string, token: string) {
     const response = await fetch(`${API_BASE_URL}/attractions/${id}`, {
       method: 'DELETE',

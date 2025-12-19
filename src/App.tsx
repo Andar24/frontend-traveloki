@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+ini App.tsx:
+import React, { useState, useEffect } from 'react';
 import type { Category, Attraction, Attractions, User } from './types';
 import { Map } from './components/Map';
 import { CategoryFilter } from './components/CategoryFilter';
@@ -8,6 +9,8 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { api } from './services/api';
 import travelLogo from './assets/travel.png';
 import styles from './App.module.css';
+
+const RecommendModal = React.lazy(() => import('./components/RecommendModal'));
 
 function App() {
   const [activeCategories, setActiveCategories] = useState<Record<Category, boolean>>({
@@ -21,6 +24,7 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showRecommendModal, setShowRecommendModal] = useState(false);
 
   useEffect(() => {
     const savedToken = localStorage.getItem('traveloki_token');
@@ -55,23 +59,21 @@ function App() {
     // Opsional: window.location.reload() jika ingin refresh halaman bersih
   };
 
-  const handleTestSubmit = async () => {
+  const handleOpenRecommend = () => {
     if (!token) { setShowAuthModal(true); return; }
-    
-    const dummyData = {
-      name: "Rekomendasi User " + user?.username,
-      description: "Tempat keren baru ditemukan",
-      lat: 3.5700 + (Math.random() * 0.02), 
-      lng: 98.6600 + (Math.random() * 0.02),
-      address: "Jl. Testing " + Math.floor(Math.random() * 100),
-      category: "food"
-    };
+    setShowRecommendModal(true);
+  };
 
-    if (confirm(`Kirim rekomendasi "${dummyData.name}"?`)) {
-      try {
-        const res = await api.submitRecommendation(dummyData, token);
-        alert(res.message);
-      } catch (err: any) { alert("Gagal: " + err.message); }
+  const handleSubmitRecommendation = async (data: { name: string; description: string; lat: number; lng: number }) => {
+    if (!token) { alert('You must be logged in to submit'); setShowAuthModal(true); return; }
+    try {
+      const payload = { ...data, category: 'food', address: '' };
+      const res = await api.submitRecommendation(payload, token);
+      alert(res?.message || 'Recommendation submitted');
+    } catch (err: any) {
+      alert('Gagal: ' + (err?.message || String(err)));
+    } finally {
+      setShowRecommendModal(false);
     }
   };
 
@@ -92,7 +94,7 @@ function App() {
   return (
     <div className={styles.container}>
       {/* Header Login/User */}
-      <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 100 }}>
+      <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 10000 }}>
         {user ? (
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <span style={{ fontWeight: 'bold', background: 'rgba(255,255,255,0.9)', padding: '5px 12px', borderRadius: '20px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
@@ -124,7 +126,7 @@ function App() {
 
             {/* Tombol Tambah Rekomendasi (Hanya User Biasa) */}
             <button 
-              onClick={handleTestSubmit}
+              onClick={handleOpenRecommend}
               style={{ width: '100%', padding: '12px', marginBottom: '20px', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem' }}
             >
               + Tambah Rekomendasi
@@ -143,6 +145,12 @@ function App() {
       </div>
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onLoginSuccess={handleLoginSuccess} />}
+      {showRecommendModal && (
+        // Lazy load modal component to keep App simple
+        <React.Suspense fallback={null}>
+          <RecommendModal onClose={() => setShowRecommendModal(false)} onSubmit={handleSubmitRecommendation} />
+        </React.Suspense>
+      )}
     </div>
   );
 }
